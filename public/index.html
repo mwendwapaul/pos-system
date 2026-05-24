@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><style>
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+    .notification-success { background-color: #10b981; }
+    .notification-error { background-color: #ef4444; }
+    .notification-info { background-color: #3b82f6; }
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS System</title>
+    <meta http-equiv="refresh" content="0; url=/login.html">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="text-center">
+        <div class="text-4xl mb-4">🔄</div>
+        <p>Redirecting to login page...</p>
+        <a href="/login.html" class="text-blue-600 hover:underline">Click here if not redirected</a>
+    </div>
+</body>
+</html>

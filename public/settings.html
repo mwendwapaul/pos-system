@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - POS System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuMTM0A1t6AAAAI0lEQVQ4T2P8//8/Ay0xwQAFTAhjYBhFoygYBaNgFIwCMgYAGkUDYQ2q0tkAAAAASUVORK5CYII=">
+    <style>
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+        }
+        .notification-success { background-color: #10b981; }
+        .notification-error { background-color: #ef4444; }
+        .notification-info { background-color: #3b82f6; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <div class="bg-white shadow mb-4">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-2xl">🏪</span>
+                        <span class="font-bold text-lg text-gray-800">POS System</span>
+                        <span class="text-xs text-gray-500 ml-2">v1.0</span>
+                    </div>
+                    <div class="flex space-x-6">
+                        <a href="/pos.html" class="inline-block py-4 px-2 hover:text-blue-600">💰 POS</a>
+                        <a href="/dashboard.html" class="inline-block py-4 px-2 hover:text-blue-600">📊 Dashboard</a>
+                        <a href="/settings.html" class="inline-block py-4 px-2 text-blue-600 border-b-2 border-blue-600">⚙️ Settings</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userName" class="text-sm text-gray-600"></span>
+                    <button onclick="logout()" class="text-red-500 text-sm hover:text-red-700">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4">
+        <div class="bg-white rounded-lg shadow p-6 max-w-2xl mx-auto">
+            <h1 class="text-2xl font-bold mb-6">⚙️ Store Settings</h1>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 mb-2 font-semibold">Store Name</label>
+                    <input type="text" id="storeName" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Your Store Name">
+                    <p class="text-xs text-gray-500 mt-1">This appears on receipts and the POS header</p>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2 font-semibold">Store Address</label>
+                    <textarea id="storeAddress" rows="2" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="123 Main Street, City, State 12345"></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Appears on customer receipts</p>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2 font-semibold">Phone Number</label>
+                    <input type="text" id="storePhone" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="(555) 123-4567">
+                    <p class="text-xs text-gray-500 mt-1">Customer support phone number</p>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2 font-semibold">Tax Rate (%)</label>
+                    <input type="number" id="taxRate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="10" step="0.1">
+                    <p class="text-xs text-gray-500 mt-1">Default: 10% - Affects all sales calculations</p>
+                </div>
+                
+                <div class="border-t pt-4 mt-4">
+                    <button onclick="saveSettings()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">💾 Save Settings</button>
+                    <button onclick="resetSettings()" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 ml-2">🔄 Reset to Default</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Help Section -->
+        <div class="bg-white rounded-lg shadow p-6 max-w-2xl mx-auto mt-6">
+            <h2 class="text-xl font-bold mb-4">📖 Quick Help</h2>
+            <div class="space-y-2 text-sm">
+                <p><strong>💰 POS Shortcuts:</strong> Ctrl+C = Clear Cart, Ctrl+S = Complete Sale, F1 = Focus Search</p>
+                <p><strong>📦 Product Management:</strong> Add, edit, or delete products from the Dashboard</p>
+                <p><strong>🧾 Receipts:</strong> Automatically print after each sale</p>
+                <p><strong>📊 Reports:</strong> View sales reports from the Dashboard</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="bg-white border-t mt-8 py-4">
+        <div class="container mx-auto px-4 text-center text-sm text-gray-500">
+            <p>© 2024 POS System | All rights reserved</p>
+        </div>
+    </div>
+
+    <script>
+        let token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login.html';
+        
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        document.getElementById('userName').innerText = user.full_name || user.username;
+        
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('storeSettings') || '{}');
+            document.getElementById('storeName').value = settings.storeName || 'Your Store';
+            document.getElementById('storeAddress').value = settings.storeAddress || '123 Main Street';
+            document.getElementById('storePhone').value = settings.storePhone || '(555) 123-4567';
+            document.getElementById('taxRate').value = settings.taxRate || '10';
+        }
+        
+        function saveSettings() {
+            const settings = {
+                storeName: document.getElementById('storeName').value,
+                storeAddress: document.getElementById('storeAddress').value,
+                storePhone: document.getElementById('storePhone').value,
+                taxRate: document.getElementById('taxRate').value
+            };
+            
+            localStorage.setItem('storeSettings', JSON.stringify(settings));
+            showNotification('✅ Settings saved successfully!', 'success');
+        }
+        
+        function resetSettings() {
+            localStorage.removeItem('storeSettings');
+            loadSettings();
+            showNotification('🔄 Settings reset to default', 'info');
+        }
+        
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+        
+        loadSettings();
+    </script>
+</body>
+</html>
