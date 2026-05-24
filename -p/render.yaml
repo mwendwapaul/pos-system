@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: pos-system
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: JWT_SECRET
+        generateValue: true
+    disk:
+      name: data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1

@@ -1,6 +1,7 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -11,8 +12,15 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static('public'));
 
-// Create database connection
-const db = new sqlite3.Database(path.join(__dirname, 'data', 'pos.db'));
+// Create data directory if it doesn't exist (Render fix)
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+}
+
+// Create database connection with persistent path
+const dbPath = process.env.DATABASE_PATH || path.join(dataDir, 'pos.db');
+const db = new sqlite3.Database(dbPath);
 
 // Create all tables
 db.serialize(() => {
@@ -68,17 +76,17 @@ db.serialize(() => {
     )
   `);
 
-  // Create default admin user
+  // Create default admin user (if not exists)
   const adminPassword = bcrypt.hashSync('admin123', 10);
   db.run(`INSERT OR IGNORE INTO users (username, password, role, full_name) 
           VALUES (?, ?, ?, ?)`, 
           ['admin', adminPassword, 'admin', 'Store Owner']);
   
-  console.log('✅ Database tables created');
+  console.log('✅ Database tables created successfully');
 });
 
 // ============ AUTHENTICATION ============
-const SECRET_KEY = 'your-secret-key-change-this-in-production';
+const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
 
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body;
@@ -117,7 +125,6 @@ function verifyToken(req, res, next) {
 }
 
 // ============ PRODUCT ROUTES ============
-// Get all products
 app.get('/api/products', verifyToken, (req, res) => {
   db.all('SELECT * FROM products ORDER BY name', (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -125,7 +132,6 @@ app.get('/api/products', verifyToken, (req, res) => {
   });
 });
 
-// Search products
 app.get('/api/products/search', verifyToken, (req, res) => {
   const { q } = req.query;
   db.all(
@@ -140,7 +146,6 @@ app.get('/api/products/search', verifyToken, (req, res) => {
   );
 });
 
-// Get low stock
 app.get('/api/products/low-stock', verifyToken, (req, res) => {
   db.all(
     'SELECT * FROM products WHERE quantity <= min_stock ORDER BY quantity ASC',
@@ -151,7 +156,6 @@ app.get('/api/products/low-stock', verifyToken, (req, res) => {
   );
 });
 
-// Add new product
 app.post('/api/products', verifyToken, (req, res) => {
   const { name, sku, barcode, price, cost, quantity, min_stock } = req.body;
   
@@ -169,7 +173,6 @@ app.post('/api/products', verifyToken, (req, res) => {
   );
 });
 
-// Update product
 app.put('/api/products/:id', verifyToken, (req, res) => {
   const { name, sku, barcode, price, cost, quantity, min_stock } = req.body;
   db.run(
@@ -183,25 +186,11 @@ app.put('/api/products/:id', verifyToken, (req, res) => {
   );
 });
 
-// Delete product
 app.delete('/api/products/:id', verifyToken, (req, res) => {
   db.run('DELETE FROM products WHERE id=?', [req.params.id], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'Product deleted' });
   });
-});
-
-// Update product stock
-app.patch('/api/products/:id/stock', verifyToken, (req, res) => {
-  const { quantity } = req.body;
-  db.run(
-    'UPDATE products SET quantity = ? WHERE id = ?',
-    [quantity, req.params.id],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: 'Stock updated' });
-    }
-  );
 });
 
 // ============ SALES ROUTES ============
@@ -276,22 +265,6 @@ app.get('/api/sales/today', verifyToken, (req, res) => {
   );
 });
 
-app.get('/api/sales/history', verifyToken, (req, res) => {
-  const { limit = 50 } = req.query;
-  db.all(
-    `SELECT s.*, 
-      (SELECT COUNT(*) FROM sale_items WHERE sale_id = s.id) as item_count
-     FROM sales s 
-     ORDER BY s.sale_date DESC 
-     LIMIT ?`,
-    [limit],
-    (err, rows) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json(rows);
-    }
-  );
-});
-
 // ============ REPORTS ROUTES ============
 app.get('/api/reports/sales', verifyToken, (req, res) => {
   const { start, end } = req.query;
@@ -362,9 +335,9 @@ app.get('/', (req, res) => {
 });
 
 // ============ START SERVER ============
-app.listen(PORT, () => {
-  console.log(`✅ Database tables created`);
-  console.log(`🚀 POS System running at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Database initialized at: ${dbPath}`);
+  console.log(`🚀 POS System running on port ${PORT}`);
   console.log(`📋 Login with: admin / admin123`);
-  console.log(`📍 Open http://localhost:${PORT}/login.html to start`);
+  console.log(`📍 Open http://localhost:${PORT}/login.html locally`);
 });
