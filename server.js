@@ -12,17 +12,16 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static('public'));
 
-// Create data directory if it doesn't exist (Render needs this)
+// Create data directory
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
-    console.log('📁 Created data directory');
 }
 
 // Create database connection
 const dbPath = path.join(dataDir, 'pos.db');
 const db = new Database(dbPath);
-console.log(`📂 Database at: ${dbPath}`);
+console.log('✅ Database connected');
 
 // Create all tables
 db.exec(`
@@ -79,7 +78,7 @@ if (!existingAdmin) {
 console.log('✅ Database tables ready');
 
 // ============ AUTHENTICATION ============
-const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
+const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key-change-this';
 
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body;
@@ -114,6 +113,53 @@ function verifyToken(req, res, next) {
     return res.status(401).json({ error: 'Invalid token' });
   }
 }
+
+// ============ USER ROUTES ============
+// Get all users (admin only)
+app.get('/api/users', verifyToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+  const users = db.prepare('SELECT id, username, role, full_name FROM users').all();
+  res.json(users);
+});
+
+// Create new user (admin only)
+app.post('/api/users', verifyToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+  const { username, password, role, full_name } = req.body;
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  
+  try {
+    const result = db.prepare('INSERT INTO users (username, password, role, full_name) VALUES (?, ?, ?, ?)')
+      .run(username, hashedPassword, role, full_name);
+    res.json({ id: result.lastInsertRowid, message: 'User created' });
+  } catch (err) {
+    res.status(500).json({ error: 'Username already exists' });
+  }
+});
+
+// Delete user (admin only)
+app.delete('/api/users/:username', verifyToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+  
+  const { username } = req.params;
+  
+  // Prevent deleting the default admin
+  if (username === 'admin') {
+    return res.status(400).json({ error: 'Cannot delete default admin user' });
+  }
+  
+  const result = db.prepare('DELETE FROM users WHERE username = ?').run(username);
+  if (result.changes === 0) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  res.json({ message: 'User deleted successfully' });
+});
 
 // ============ PRODUCT ROUTES ============
 app.get('/api/products', verifyToken, (req, res) => {
@@ -209,6 +255,18 @@ app.get('/api/sales/today', verifyToken, (req, res) => {
      FROM sales WHERE DATE(sale_date) = DATE('now')`
   ).get();
   res.json(row);
+});
+
+app.get('/api/sales/history', verifyToken, (req, res) => {
+  const { limit = 50 } = req.query;
+  const rows = db.prepare(
+    `SELECT s.*, 
+      (SELECT COUNT(*) FROM sale_items WHERE sale_id = s.id) as item_count
+     FROM sales s 
+     ORDER BY s.sale_date DESC 
+     LIMIT ?`
+  ).all(limit);
+  res.json(rows);
 });
 
 // ============ REPORTS ROUTES ============
