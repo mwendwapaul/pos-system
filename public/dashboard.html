@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - POS System</title>
+    <title>Caven Cottage - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuMTM0A1t6AAAAI0lEQVQ4T2P8//8/Ay0xwQAFTAhjYBhFoygYBaNgFIwCMgYAGkUDYQ2q0tkAAAAASUVORK5CYII=">
     <style>
@@ -12,7 +12,7 @@
             width: 20px;
             height: 20px;
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
+            border-top: 3px solid #d97706;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -33,7 +33,7 @@
         }
         .notification-success { background-color: #10b981; }
         .notification-error { background-color: #ef4444; }
-        .notification-info { background-color: #3b82f6; }
+        .notification-info { background-color: #d97706; }
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
@@ -47,14 +47,14 @@
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-8">
                     <div class="flex items-center space-x-2">
-                        <span class="text-2xl">🏪</span>
-                        <span class="font-bold text-lg text-gray-800">POS System</span>
+                        <span class="text-2xl">☕</span>
+                        <span class="font-bold text-lg text-gray-800">Caven Cottage</span>
                         <span class="text-xs text-gray-500 ml-2">v1.0</span>
                     </div>
                     <div class="flex space-x-6">
-                        <a href="/pos.html" class="inline-block py-4 px-2 hover:text-blue-600">💰 POS</a>
-                        <a href="/dashboard.html" class="inline-block py-4 px-2 text-blue-600 border-b-2 border-blue-600">📊 Dashboard</a>
-                        <a href="/settings.html" class="inline-block py-4 px-2 hover:text-blue-600">⚙️ Settings</a>
+                        <a href="/pos.html" class="inline-block py-4 px-2 hover:text-amber-600">💰 POS</a>
+                        <a href="/dashboard.html" class="inline-block py-4 px-2 text-amber-600 border-b-2 border-amber-600">📊 Dashboard</a>
+                        <a href="/settings.html" class="inline-block py-4 px-2 hover:text-amber-600">⚙️ Settings</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -78,7 +78,7 @@
                 <p class="text-3xl font-bold" id="lowStockCount">0</p>
                 <p class="text-sm text-red-500">Needs attention</p>
             </div>
-            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-amber-500">
                 <h3 class="text-gray-500 text-sm uppercase">Total Products</h3>
                 <p class="text-3xl font-bold" id="totalProducts">0</p>
                 <p class="text-sm text-gray-500">In inventory</p>
@@ -89,7 +89,7 @@
         <div class="bg-white rounded-lg shadow">
             <div class="p-6 border-b flex justify-between items-center">
                 <h2 class="text-xl font-bold">📦 Product Management</h2>
-                <button onclick="showAddProductModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Add Product</button>
+                <button onclick="showAddProductModal()" class="bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700">+ Add Product</button>
             </div>
             <div class="overflow-x-auto p-6">
                 <table class="w-full">
@@ -130,7 +130,7 @@
                 <input type="number" id="prodMinStock" placeholder="Min Stock Alert" class="w-full p-2 border rounded">
             </div>
             <div class="flex gap-2 mt-6">
-                <button onclick="addProduct()" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Save</button>
+                <button onclick="addProduct()" class="flex-1 bg-amber-600 text-white py-2 rounded hover:bg-amber-700">Save</button>
                 <button onclick="closeModal()" class="flex-1 bg-gray-500 text-white py-2 rounded hover:bg-gray-600">Cancel</button>
             </div>
         </div>
@@ -195,7 +195,7 @@
                 
                 const tbody = document.getElementById('productsTable');
                 if (products.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-gray-400">No products yet. Click "Add Product" to start.办</tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-gray-400">No products yet. Click "Add Product" to start.办</td></tr>';
                 } else {
                     tbody.innerHTML = products.map(p => `
                         <tr class="border-b hover:bg-gray-50">
@@ -205,10 +205,10 @@
                             <td class="p-3 ${p.quantity <= p.min_stock ? 'text-red-600 font-bold' : ''}">${p.quantity}</td>
                             <td class="p-3"><span class="px-2 py-1 rounded text-xs ${p.quantity <= p.min_stock ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${p.quantity <= p.min_stock ? '⚠️ Low Stock' : '✓ In Stock'}</span></td>
                             <td class="p-3">
-                                <button onclick="editProduct(${p.id})" class="text-blue-600 hover:text-blue-800 mr-2">✏️ Edit</button>
+                                <button onclick="editProduct(${p.id})" class="text-amber-600 hover:text-amber-800 mr-2">✏️ Edit</button>
                                 <button onclick="deleteProduct(${p.id})" class="text-red-600 hover:text-red-800">🗑️ Delete</button>
                             </td>
-                         </tr>
+                          </tr>
                     `).join('');
                 }
             } catch (error) {
